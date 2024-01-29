@@ -14,7 +14,7 @@ public class deneme : MonoBehaviour
     void Update()
     {
         koray
-        1
+        
         2
         3
         4
