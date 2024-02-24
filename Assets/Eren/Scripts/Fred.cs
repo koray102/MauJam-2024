@@ -10,13 +10,21 @@ public class Fred : MonoBehaviour
     public float waitTime = 2f; // Time to wait at each waypoint
     public Animator animator; // Reference to the animator component
 
+
+
     private int currentWaypointIndex = 0;
     private bool isWaiting = false;
     private Vector3 targetPosition;
     public bool BrokenGlass;
+
     public bool StopPath = false;
     public Transform glass;
     public Transform chair;
+
+    public bool sit=false;
+    
+    private bool isEntered=false;
+
 
     void Start()
     {
@@ -46,6 +54,13 @@ public class Fred : MonoBehaviour
         if (BrokenGlass)
         {
             GoToGlass();
+
+
+        }
+        if (sit)
+        {
+            GoToSitting();
+
         }
     }
 
@@ -55,7 +70,12 @@ public class Fred : MonoBehaviour
         animator.SetBool("idle", true); // Set walking animation to false
         yield return new WaitForSeconds(waitTime);
         isWaiting = false;
-        MoveToNextWaypoint();
+        if (!StopPath)
+        {
+            MoveToNextWaypoint();
+        }
+       
+        
     }
 
     void MoveToNextWaypoint()
@@ -63,47 +83,58 @@ public class Fred : MonoBehaviour
         currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
         targetPosition = waypoints[currentWaypointIndex].position;
         animator.SetBool("idle", false); // Set walking animation to true
+
     }
+    
     public void GoToGlass()
     {
-        StopPath = true;
+            StopPath = true;
 
-        animator.SetBool("idle", false);
-        targetPosition = glass.position;
-        var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
-        float distance = Vector3.Distance(transform.position, targetPosition);
-
-
-
-        transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
-
+            animator.SetBool("idle", false);
+            targetPosition = glass.position;
+            var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+            float distance = Vector3.Distance(transform.position, targetPosition);
+        Debug.Log("1."+distance);
+            if (distance > .3f)
+            {
+                transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+            }
+            else if(!isEntered)
+            {
+                animator.SetTrigger("crouch");
+                isEntered = true;
+            }
     }
+
+
     public void GoToSitting()
     {
+        BrokenGlass = false;
+
         animator.SetBool("idle", false);
+        
         targetPosition = chair.position;
         var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
         float distance = Vector3.Distance(transform.position, targetPosition);
+        Debug.Log(distance);
 
-
-
-        transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
-
-    }
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.CompareTag("Glass"))
+        if (distance > .3f)
         {
-            Debug.Log("yarrak");
-            animator.SetTrigger("crouch");
-        }
 
-        if (other.gameObject.CompareTag("Chair"))
+            Debug.Log("aqqqq");
+            transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+        }else
         {
+
             animator.SetTrigger("sit");
+            sit = false;
         }
+    }
+    public void booler()
+    {
+        sit = true;
     }
 
 }
