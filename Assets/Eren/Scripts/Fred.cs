@@ -6,25 +6,46 @@ using UnityEngine.AI;
 public class Fred : MonoBehaviour
 {
     public Transform[] waypoints; // Array of waypoints
+    public float speed = 3.0f; // Movement speed
     public float waitTime = 2f; // Time to wait at each waypoint
     public Animator animator; // Reference to the animator component
-    private NavMeshAgent agent;
+
     private int currentWaypointIndex = 0;
     private bool isWaiting = false;
+    private Vector3 targetPosition;
+    public bool BrokenGlass;
+    public bool StopPath = false;
+    public Transform glass;
+    public Transform chair;
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+
         MoveToNextWaypoint();
     }
 
     void Update()
     {
-        // Check if the agent reached the destination
-        if (!agent.pathPending && agent.remainingDistance < 0.1f && !isWaiting)
+        var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+        // Move towards the current waypoint
+        if (!isWaiting && !StopPath)
         {
-            StartCoroutine(WaitAtWaypoint());
+            float distance = Vector3.Distance(transform.position, targetPosition);
+            if (distance > 0.1f)
+            {
+
+                transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+            }
+            else
+            {
+                StartCoroutine(WaitAtWaypoint());
+            }
+        }
+        if (BrokenGlass)
+        {
+            GoToGlass();
         }
     }
 
@@ -39,15 +60,50 @@ public class Fred : MonoBehaviour
 
     void MoveToNextWaypoint()
     {
-        if (currentWaypointIndex >= waypoints.Length)
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        targetPosition = waypoints[currentWaypointIndex].position;
+        animator.SetBool("idle", false); // Set walking animation to true
+    }
+    public void GoToGlass()
+    {
+        StopPath = true;
+
+        animator.SetBool("idle", false);
+        targetPosition = glass.position;
+        var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+        float distance = Vector3.Distance(transform.position, targetPosition);
+
+
+
+        transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+
+    }
+    public void GoToSitting()
+    {
+        animator.SetBool("idle", false);
+        targetPosition = chair.position;
+        var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+        float distance = Vector3.Distance(transform.position, targetPosition);
+
+
+
+        transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Glass"))
         {
-            // End of waypoints, do something (e.g., restart from the first waypoint)
-            currentWaypointIndex = 0;
-            return;
+            Debug.Log("yarrak");
+            animator.SetTrigger("crouch");
         }
 
-        agent.SetDestination(waypoints[currentWaypointIndex].position);
-        animator.SetBool("idle", false); // Set walking animation to true
-        currentWaypointIndex++;
+        if (other.gameObject.CompareTag("Chair"))
+        {
+            animator.SetTrigger("sit");
+        }
     }
+
 }
