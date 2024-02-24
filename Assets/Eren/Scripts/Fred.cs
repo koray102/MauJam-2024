@@ -6,25 +6,61 @@ using UnityEngine.AI;
 public class Fred : MonoBehaviour
 {
     public Transform[] waypoints; // Array of waypoints
+    public float speed = 3.0f; // Movement speed
     public float waitTime = 2f; // Time to wait at each waypoint
     public Animator animator; // Reference to the animator component
-    private NavMeshAgent agent;
+
+
+
     private int currentWaypointIndex = 0;
     private bool isWaiting = false;
+    private Vector3 targetPosition;
+    public bool BrokenGlass;
+
+    public bool StopPath = false;
+    public Transform glass;
+    public Transform chair;
+
+    public bool sit=false;
+    
+    private bool isEntered=false;
+
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+
         MoveToNextWaypoint();
     }
 
     void Update()
     {
-        // Check if the agent reached the destination
-        if (!agent.pathPending && agent.remainingDistance < 0.1f && !isWaiting)
+        var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+        // Move towards the current waypoint
+        if (!isWaiting && !StopPath)
         {
-            StartCoroutine(WaitAtWaypoint());
+            float distance = Vector3.Distance(transform.position, targetPosition);
+            if (distance > 0.1f)
+            {
+
+                transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+            }
+            else
+            {
+                StartCoroutine(WaitAtWaypoint());
+            }
+        }
+        if (BrokenGlass)
+        {
+            GoToGlass();
+
+
+        }
+        if (sit)
+        {
+            GoToSitting();
+
         }
     }
 
@@ -34,20 +70,71 @@ public class Fred : MonoBehaviour
         animator.SetBool("idle", true); // Set walking animation to false
         yield return new WaitForSeconds(waitTime);
         isWaiting = false;
-        MoveToNextWaypoint();
+        if (!StopPath)
+        {
+            MoveToNextWaypoint();
+        }
+       
+        
     }
 
     void MoveToNextWaypoint()
     {
-        if (currentWaypointIndex >= waypoints.Length)
-        {
-            // End of waypoints, do something (e.g., restart from the first waypoint)
-            currentWaypointIndex = 0;
-            return;
-        }
-
-        agent.SetDestination(waypoints[currentWaypointIndex].position);
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+        targetPosition = waypoints[currentWaypointIndex].position;
         animator.SetBool("idle", false); // Set walking animation to true
-        currentWaypointIndex++;
+
     }
+    
+    public void GoToGlass()
+    {
+            StopPath = true;
+
+            animator.SetBool("idle", false);
+            targetPosition = glass.position;
+            var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+            float distance = Vector3.Distance(transform.position, targetPosition);
+        Debug.Log("1."+distance);
+            if (distance > .3f)
+            {
+                transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+            }
+            else if(!isEntered)
+            {
+                animator.SetTrigger("crouch");
+                isEntered = true;
+            }
+    }
+
+
+    public void GoToSitting()
+    {
+        BrokenGlass = false;
+
+        animator.SetBool("idle", false);
+        
+        targetPosition = chair.position;
+        var targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
+        float distance = Vector3.Distance(transform.position, targetPosition);
+        Debug.Log(distance);
+
+        if (distance > .3f)
+        {
+
+            Debug.Log("aqqqq");
+            transform.position = Vector3.Lerp(transform.position, targetPosition, speed * Time.deltaTime / distance);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+        }else
+        {
+
+            animator.SetTrigger("sit");
+            sit = false;
+        }
+    }
+    public void booler()
+    {
+        sit = true;
+    }
+
 }
