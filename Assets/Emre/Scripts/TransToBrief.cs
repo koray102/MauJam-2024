@@ -5,8 +5,12 @@ using UnityEngine.SceneManagement;
 
 public class TransToBrief : MonoBehaviour
 {
-    private void OnEnable()
+    public string sceneName;
+    public float transitionTime = 1f;
+
+    void OnEnable()
     {
-        SceneManager.LoadScene("BriefScene",LoadSceneMode.Single);
+        SceneManager.LoadScene(sceneName);
+                
     }
 }

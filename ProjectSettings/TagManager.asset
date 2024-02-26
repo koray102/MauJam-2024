@@ -6,6 +6,17 @@ TagManager:
   tags:
   - Glass
   - Chair
+  - Grab
+  - Break
+  - su
+  - Fireable
+  - firepoint
+  - change
+  - change2
+  - change3
+  - change4
+  - change5
+  - change6
   layers:
   - Default
   - TransparentFX

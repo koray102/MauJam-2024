@@ -11,4 +11,22 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/BriefScene.unity
     guid: 281dc48437006264fac605074c2d26dc
+  - enabled: 1
+    path: Assets/SYNTY ASSETS/PolygonCity/Scenes/gorev1.unity
+    guid: 35299a6a99d6dfe4bb709527ba95aab0
+  - enabled: 1
+    path: Assets/tutorial.unity
+    guid: f84406026542af24e9c5b6f76c882c2a
+  - enabled: 1
+    path: Assets/brief.unity
+    guid: c0cece3edbd60f54da022fed71adb0ef
+  - enabled: 1
+    path: Assets/brief2.unity
+    guid: b21ce4ba912476c40a3a402f794a66e4
+  - enabled: 1
+    path: Assets/Scenes/gorev2.unity
+    guid: cbc23148d60e0574b9a5208df4cca767
+  - enabled: 1
+    path: Assets/bitis.unity
+    guid: 98c29cb2d91dafb4eaee50c907bcf0ed
   m_configObjects: {}
